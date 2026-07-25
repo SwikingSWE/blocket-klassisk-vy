@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Blocket Bilar – Klassisk vy",
+  "version": "0.1.0",
+  "description": "Ger tillbaka den täta, skannbara listvyn för bilar på Blocket. Sorterbara kolumner, sparade sökningar, jämförelse och lästmarkering.",
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "permissions": ["storage"],
+
+  "host_permissions": ["https://www.blocket.se/*"],
+
+  "action": {
+    "default_title": "Blocket Klassisk vy",
+    "default_popup": "src/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://www.blocket.se/mobility/*"],
+      "js": ["src/hook.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://www.blocket.se/mobility/*"],
+      "js": ["src/store.js", "src/format.js", "src/content.js"],
+      "css": ["src/classic.css"],
+      "run_at": "document_start",
+      "world": "ISOLATED",
+      "all_frames": false
+    }
+  ]
+}

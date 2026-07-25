@@ -1,0 +1,286 @@
+/* classic.css — the dense list.
+ *
+ * Layout goals, in order:
+ *   1. As many cars on screen as the eye can actually scan.
+ *   2. Numbers aligned in columns so you can compare down a row.
+ *   3. Nothing moves, nothing animates, nothing lazy-pops.
+ */
+
+:root {
+  --bc-fg: #16181d;
+  --bc-fg-soft: #6a7080;
+  --bc-line: #e3e6ec;
+  --bc-line-strong: #c8cdd8;
+  --bc-bg: #fff;
+  --bc-zebra: #fafbfc;
+  --bc-hover: #eef4ff;
+  --bc-accent: #e4002b;      /* Blocket red, used sparingly */
+  --bc-link: #0a58ca;
+  --bc-seen: #9aa1b1;
+  --bc-pick: #fff8e1;
+}
+
+/* ---- give the list room -------------------------------------------- *
+ * Blocket caps the page at 1010px and gives the results two of three
+ * grid columns — about 660px. A ten-column table cannot live in 660px,
+ * so the container gets widened and the sidebar pinned to a fixed width.
+ */
+
+html.bc-on main.page-container {
+  max-width: min(1720px, 96vw) !important;
+  width: min(1720px, 96vw) !important;
+}
+
+html.bc-on main .grid.grid-cols-3 {
+  grid-template-columns: 260px minmax(0, 1fr) !important;
+}
+
+html.bc-on main .grid.grid-cols-3 > .col-span-2 {
+  grid-column: 2 / -1 !important;
+  min-width: 0;
+}
+
+/* ---- hide the parts we are replacing ------------------------------- */
+
+html.bc-on .sf-result-list { display: none !important; }
+
+/* the "paid placement" strip and the map/grid switcher live above the list */
+html.bc-on [class*="sf-search-ad"][class*="pole"] { display: none !important; }
+
+/* ---- shell --------------------------------------------------------- */
+
+#bc-root {
+  font: 13px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--bc-fg);
+  background: var(--bc-bg);
+  border: 1px solid var(--bc-line-strong);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+/* ---- toolbar ------------------------------------------------------- */
+
+.bc-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--bc-line-strong);
+  background: linear-gradient(#fff, #f6f7f9);
+  flex-wrap: wrap;
+}
+
+.bc-count { font-size: 13px; }
+.bc-count strong { font-size: 15px; }
+.bc-muted { color: var(--bc-fg-soft); }
+
+.bc-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.bc-segs { display: inline-flex; border: 1px solid var(--bc-line-strong); border-radius: 3px; overflow: hidden; }
+.bc-seg {
+  border: 0; background: #fff; padding: 4px 10px; font: inherit; cursor: pointer;
+  border-right: 1px solid var(--bc-line);
+}
+.bc-seg:last-child { border-right: 0; }
+.bc-seg-on { background: var(--bc-fg); color: #fff; }
+
+.bc-check { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; }
+
+.bc-btn {
+  border: 1px solid var(--bc-line-strong); background: #fff; border-radius: 3px;
+  padding: 4px 10px; font: inherit; cursor: pointer;
+}
+.bc-btn:hover { background: var(--bc-hover); }
+.bc-btn-quiet { color: var(--bc-fg-soft); }
+
+/* ---- table --------------------------------------------------------- */
+
+.bc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  /* fixed layout: the title column absorbs the slack, everything else holds
+     its width so the numbers stay in a straight line down the page */
+  table-layout: fixed;
+}
+
+/* per-column widths, keyed by class rather than nth-child so that toggling
+   a column or switching density cannot shift them out of alignment */
+.bc-col-year { width: 52px; }
+.bc-col-mileage { width: 66px; }
+.bc-col-milPerYear { width: 62px; }
+.bc-col-fuel { width: 92px; }
+.bc-col-transmission { width: 52px; }
+.bc-col-price { width: 106px; }
+.bc-col-location { width: 110px; }
+.bc-col-seller { width: 150px; }
+.bc-col-age { width: 58px; }
+.bc-col-title { width: auto; min-width: 0; }
+
+.bc-table td.bc-c-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.bc-table thead th {
+  position: sticky; top: 0; z-index: 3;
+  background: #f1f3f6;
+  border-bottom: 1px solid var(--bc-line-strong);
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.bc-table thead th:hover { background: #e7eaf0; }
+.bc-table thead th.bc-sorted { background: #dfe5ef; }
+.bc-arrow { margin-left: 4px; font-size: 9px; color: var(--bc-accent); }
+
+.bc-table td { padding: 4px 8px; border-bottom: 1px solid var(--bc-line); vertical-align: middle; }
+.bc-table tbody tr:nth-child(even) { background: var(--bc-zebra); }
+.bc-row { cursor: pointer; }
+.bc-row:hover { background: var(--bc-hover) !important; }
+.bc-row.bc-picked { background: var(--bc-pick) !important; }
+.bc-row.bc-seen .bc-title,
+.bc-row.bc-seen td { color: var(--bc-seen); }
+.bc-row.bc-seen img { opacity: .55; }
+
+/* column shapes */
+.bc-c-pick { width: 26px; text-align: center; }
+.bc-c-thumb { width: 104px; padding: 3px 4px 3px 8px !important; }
+/* Blocket's CSS reset applies `img { max-width: 100% }`, which collapses a
+   thumbnail to zero inside a shrink-to-fit cell. Opt out explicitly. */
+.bc-c-thumb img {
+  display: block;
+  width: 96px; height: 72px;
+  max-width: none;
+  object-fit: cover; border-radius: 3px; background: #eee;
+}
+.bc-nothumb { width: 96px; height: 72px; display: grid; place-items: center; color: #bbb; background: #f2f3f5; border-radius: 3px; }
+
+.bc-c-title { overflow: hidden; }
+.bc-title {
+  color: var(--bc-link); text-decoration: none; font-weight: 600; display: block;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bc-row:hover .bc-title { text-decoration: underline; }
+.bc-spec {
+  display: block; color: var(--bc-fg-soft); font-size: 12px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 46ch;
+}
+
+.bc-c-num { text-align: right; white-space: nowrap; }
+.bc-c-txt { white-space: nowrap; }
+.bc-c-price { font-weight: 700; font-size: 14px; }
+.bc-c-age { color: var(--bc-fg-soft); font-size: 12px; }
+
+.bc-dealer { color: var(--bc-fg-soft); }
+.bc-private { color: #1f7a3d; }
+
+.bc-c-act { width: 26px; text-align: center; }
+.bc-x {
+  border: 0; background: transparent; color: #c3c8d2; cursor: pointer;
+  font-size: 12px; padding: 2px 4px; border-radius: 3px;
+}
+.bc-row:hover .bc-x { color: var(--bc-fg-soft); }
+.bc-x:hover { background: var(--bc-accent); color: #fff !important; }
+
+/* ---- density ------------------------------------------------------- */
+
+/* "Tät": no thumbnails, title and spec on one line, ~25px rows.
+   Roughly 14 cars above the fold on a laptop instead of two. */
+html[data-bc-density="compact"] .bc-c-thumb { display: none; }
+html[data-bc-density="compact"] .bc-table td { padding: 2px 8px; }
+html[data-bc-density="compact"] .bc-c-title { white-space: nowrap; text-overflow: ellipsis; }
+html[data-bc-density="compact"] .bc-title { display: inline; }
+html[data-bc-density="compact"] .bc-spec {
+  display: inline; font-size: 12px; margin-left: 8px; max-width: none;
+}
+
+html[data-bc-density="photos"] .bc-c-thumb { width: 172px; }
+html[data-bc-density="photos"] .bc-c-thumb img { width: 160px; height: 120px; }
+html[data-bc-density="photos"] .bc-nothumb { width: 160px; height: 120px; }
+
+/* ---- pagination ---------------------------------------------------- */
+
+.bc-pager {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px; border-top: 1px solid var(--bc-line-strong); background: #f6f7f9;
+}
+.bc-pagenums { display: flex; gap: 3px; flex-wrap: wrap; }
+.bc-page {
+  border: 1px solid var(--bc-line-strong); background: #fff; border-radius: 3px;
+  padding: 3px 9px; font: inherit; cursor: pointer; min-width: 30px;
+}
+.bc-page:hover { background: var(--bc-hover); }
+.bc-page-on { background: var(--bc-fg); color: #fff; border-color: var(--bc-fg); font-weight: 600; }
+.bc-gap { padding: 3px 2px; color: var(--bc-fg-soft); }
+
+/* ---- compare tray -------------------------------------------------- */
+
+.bc-tray {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999;
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 14px;
+  background: #16181d; color: #fff;
+  font: 13px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  box-shadow: 0 -2px 10px rgba(0,0,0,.25);
+}
+.bc-chips { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; }
+.bc-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #2b2f38; border-radius: 3px; padding: 2px 4px 2px 8px;
+}
+.bc-chip-x { border: 0; background: transparent; color: #9aa1b1; cursor: pointer; }
+.bc-chip-x:hover { color: #fff; }
+.bc-tray .bc-btn { background: #2b2f38; border-color: #40454f; color: #fff; }
+.bc-tray .bc-btn:hover { background: #3a3f4a; }
+
+/* ---- filter sidebar: same content, half the height ----------------- */
+
+html.bc-on aside label,
+html.bc-on [class*="filter"] label { line-height: 1.25; }
+html.bc-on [class*="filter"] li { margin: 0 !important; }
+
+/* ---- ad detail page ------------------------------------------------ */
+
+html.bc-item .bc-specbar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1px;
+  background: var(--bc-line);
+  border: 1px solid var(--bc-line-strong);
+  border-radius: 4px;
+  margin: 12px 0 20px;
+  overflow: hidden;
+  font: 13px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+.bc-specitem { background: #fff; padding: 7px 10px; display: flex; flex-direction: column; gap: 2px; }
+.bc-speck { font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--bc-fg-soft); }
+.bc-specv { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* the hero gallery on the item page is taller than a laptop screen */
+html.bc-item [class*="gallery"] img,
+html.bc-item [class*="Gallery"] img { max-height: 46vh !important; }
+
+/* ---- dark theme ----------------------------------------------------
+ *
+ * Deliberately NOT wired to prefers-color-scheme. Blocket's page is white
+ * regardless of the OS setting, so following the OS would drop a black slab
+ * into the middle of a white page. This is opt-in, via the toolbar.
+ */
+
+html[data-bc-theme="dark"] {
+  --bc-fg: #e8eaee; --bc-fg-soft: #98a0b0; --bc-line: #2a2e36; --bc-line-strong: #3a3f4a;
+  --bc-bg: #14161a; --bc-zebra: #181b20; --bc-hover: #1e2630; --bc-seen: #6a7080; --bc-pick: #2a2617;
+  --bc-link: #7fb0ff;
+}
+html[data-bc-theme="dark"] .bc-toolbar { background: linear-gradient(#1a1d22, #15171b); }
+html[data-bc-theme="dark"] .bc-table thead th { background: #1c1f25; }
+html[data-bc-theme="dark"] .bc-table thead th:hover { background: #232730; }
+html[data-bc-theme="dark"] .bc-seg,
+html[data-bc-theme="dark"] .bc-btn,
+html[data-bc-theme="dark"] .bc-page { background: #1a1d22; color: var(--bc-fg); }
+html[data-bc-theme="dark"] .bc-seg-on { background: #e8eaee; color: #14161a; }
+html[data-bc-theme="dark"] .bc-specitem { background: #14161a; }
