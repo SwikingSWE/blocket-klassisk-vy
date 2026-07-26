@@ -247,29 +247,64 @@
 
   const buildListPanel = (f) => {
     const selected = new Set(currentParams().getAll(f.name));
-    const rows = [];
 
-    const addItem = (item, depth) => {
-      const id = 'bc-f-' + f.name + '-' + item.value;
-      rows.push(
-        el('label', { class: 'bc-fitem' + (depth ? ' bc-fitem-sub' : ''), for: id }, [
-          el('input', {
-            type: 'checkbox', id, value: item.value,
-            ...(selected.has(String(item.value)) ? { checked: true } : {}),
-          }),
-          el('span', { class: 'bc-fname', text: item.display_name }),
-          typeof item.hits === 'number'
-            ? el('span', { class: 'bc-fhits', text: F().num(item.hits) })
-            : null,
-        ])
-      );
-      for (const kid of item.filter_items || []) addItem(kid, (depth || 0) + 1);
+    /* Sub-levels stay folded away until their parent is ticked. These lists
+       nest — 145 brands, each with models, each with variants; 21 regions,
+       each with municipalities — so drawing the whole tree at once buries the
+       top level under thousands of rows nobody asked for. Pick Audi and its
+       models appear, which is how the old panel behaved. Seeded from the URL
+       so an already-applied brand comes back open. */
+    const expanded = new Set(selected);
+
+    /* Unticking a parent takes its descendants with it, otherwise a model
+       stays applied while the brand that revealed it is gone. */
+    const descendantsOf = (item, out) => {
+      for (const kid of item.filter_items || []) {
+        out.push(String(kid.value));
+        descendantsOf(kid, out);
+      }
+      return out;
     };
 
-    for (const item of f.filter_items || []) addItem(item, 0);
+    const body = el('div', { class: 'bc-panelbody' });
+
+    const paint = () => {
+      body.textContent = '';
+      const addItem = (item, depth) => {
+        const val = String(item.value);
+        const kids = item.filter_items || [];
+        const id = 'bc-f-' + f.name + '-' + val;
+        body.appendChild(
+          el('label', { class: 'bc-fitem' + (depth ? ' bc-fitem-sub' : ''), for: id }, [
+            el('input', {
+              type: 'checkbox', id, value: val,
+              ...(selected.has(val) ? { checked: true } : {}),
+              onchange: (e) => {
+                if (e.target.checked) {
+                  selected.add(val);
+                  if (kids.length) expanded.add(val);
+                } else {
+                  selected.delete(val);
+                  expanded.delete(val);
+                  for (const d of descendantsOf(item, [])) { selected.delete(d); expanded.delete(d); }
+                }
+                paint();
+              },
+            }),
+            el('span', { class: 'bc-fname', text: item.display_name }),
+            typeof item.hits === 'number'
+              ? el('span', { class: 'bc-fhits', text: F().num(item.hits) })
+              : null,
+          ])
+        );
+        if (expanded.has(val)) for (const kid of kids) addItem(kid, (depth || 0) + 1);
+      };
+      for (const item of f.filter_items || []) addItem(item, 0);
+    };
+    paint();
 
     const panel = el('div', { class: 'bc-chip-panel' }, [
-      el('div', { class: 'bc-panelbody' }, rows),
+      body,
       el('div', { class: 'bc-panelfoot' }, [
         el('button', {
           class: 'bc-btn bc-btn-quiet', type: 'button', text: 'Rensa',
@@ -277,9 +312,11 @@
         }),
         el('button', {
           class: 'bc-btn bc-btn-primary', type: 'button', text: 'Visa',
+          /* Read the set, not the DOM: a collapsed branch has no inputs to
+             query, and its selections would be silently dropped. */
           onclick: () => applyParams((q) => {
             q.delete(f.name);
-            panel.querySelectorAll('input:checked').forEach((i) => q.append(f.name, i.value));
+            selected.forEach((v) => q.append(f.name, v));
           }),
         }),
       ]),
