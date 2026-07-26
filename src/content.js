@@ -119,7 +119,7 @@
     { key: 'price', label: 'Pris', cls: 'bc-c-num bc-c-price', sort: (r) => r.priceAmount },
     { key: 'location', label: 'Ort', cls: 'bc-c-txt', sort: (r) => r.location },
     { key: 'seller', label: 'Säljare', cls: 'bc-c-txt', sort: (r) => r.seller },
-    { key: 'age', label: 'Lagd', cls: 'bc-c-num bc-c-age', sort: (r) => -(r.timestamp || 0) },
+    { key: 'age', label: 'Inlagd', cls: 'bc-c-num bc-c-age', sort: (r) => -(r.timestamp || 0) },
   ];
 
   /* Server-side sorts Blocket itself supports, mapped to our column keys. */
@@ -441,7 +441,13 @@
     }
     if (anchor) anchor.parentElement.insertBefore(bar, anchor);
     else if (heading && heading.parentElement) heading.parentElement.insertAdjacentElement('afterend', bar);
-    else if (list) list.parentElement.insertBefore(bar, list);
+    else {
+      /* Last resort, once both anchors are gone. Aim at our own container
+         rather than the list: #bc-root is itself inserted before the list, so
+         anchoring on the list puts the filters underneath the table. */
+      const fallback = document.getElementById('bc-root') || list;
+      if (fallback && fallback.parentElement) fallback.parentElement.insertBefore(bar, fallback);
+    }
   };
 
   const hideNativeFilterChips = () => {
@@ -466,9 +472,15 @@
       });
 
     return el('div', { class: 'bc-toolbar' }, [
+      /* "Bilar, 143 589 träffar" — category then count on one line, the way
+         the old breadcrumb read it. */
       el('div', { class: 'bc-count' }, [
-        el('strong', { text: total != null ? F().num(total) : String(rows.length) }),
-        ' träffar',
+        el('span', { class: 'bc-h2', text: 'Bilar' }),
+        el('span', { class: 'bc-hits' }, [
+          ', ',
+          el('strong', { class: 'bc-numhits', text: total != null ? F().num(total) : String(rows.length) }),
+          ' träffar',
+        ]),
         rows.length < state.docs.length
           ? el('span', { class: 'bc-muted', text: ` · ${hiddenCount} dolda` })
           : null,
@@ -590,7 +602,8 @@
     push('seller', 'bc-c-txt',
       el('span', { class: r.isDealer ? 'bc-dealer' : 'bc-private', text: r.seller || '—' }),
       r.isDealer ? 'Bilhandlare' : 'Privatperson');
-    push('age', 'bc-c-num bc-c-age', F().age(r.timestamp) || '—');
+    push('age', 'bc-c-num bc-c-age', F().listDate(r.timestamp) || '—',
+      r.timestamp ? new Date(r.timestamp).toLocaleString('sv-SE') + ' (' + F().age(r.timestamp) + ' sedan)' : null);
 
     cells.push(
       el('td', { class: 'bc-c-act' },
@@ -631,9 +644,9 @@
     if (to < p.last) { if (to < p.last - 1) nums.push(el('span', { class: 'bc-gap', text: '…' })); nums.push(mk(p.last)); }
 
     return el('nav', { class: 'bc-pager' }, [
-      cur > 1 ? mk(cur - 1, '‹ Föregående') : null,
+      cur > 1 ? mk(cur - 1, '‹ Föregående sida') : null,
       el('div', { class: 'bc-pagenums' }, nums),
-      cur < p.last ? mk(cur + 1, 'Nästa ›') : null,
+      cur < p.last ? mk(cur + 1, 'Nästa sida ›') : null,
     ]);
   };
 

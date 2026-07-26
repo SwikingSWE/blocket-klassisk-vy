@@ -4,6 +4,12 @@ A Chrome/Edge extension that replaces Blocket's car search results with a dense,
 sortable table — the kind of list you could actually scan before the November 2025
 redesign.
 
+That date is from the archive rather than from memory: `/mobility/search/car` has
+no Wayback snapshot before 18 November 2025, and the URL it replaced was still
+being captured on 5 November. The chrome here — the filter chip row, the list
+dates — follows the design that ran until then. The dense table does not; no
+Blocket ever had one. That part is the point of the extension.
+
 ## Install (unpacked)
 
 1. Unzip this folder somewhere permanent. Chrome loads it from disk on every
@@ -18,8 +24,28 @@ No sign-in, no account, no server. Everything it stores stays in
 
 ## What it does
 
+**Filters** are the chip row that sat above the results until November 2025,
+rather than the current sidebar: a search box, `Visa alla filter`, then eight
+dropdown chips — Märke & modell, Drivmedel, Biltyp, Pris, Modellår, Miltal,
+Växellåda, Säljare. Labels and order are taken from the archived DOM. Each
+option shows its hit count (`Bensin 49 309`, `Företag 119 849`), so you can
+read the shape of the market before clicking anything, and brand and location
+drill down through their sub-levels.
+
+`Visa alla filter` reveals Blocket's own sidebar rather than duplicating it, so
+the fourteen filters the chip row doesn't surface — including the map ones —
+stay reachable.
+
+The row is built from the `filters` array the page already ships, so there's
+nothing to scrape. Applying a filter rewrites the URL and lets Blocket's own
+search run. `STANDARD_FILTER` goes over as `name=value` and repeats for
+multiple values; `RANGE_FILTER` carries its own parameter names in the payload
+(`price_from`, `price_to`). Worth knowing if you ever hand-edit a URL: the page
+honours `?fuel=1` but silently ignores several others, so the parameters here
+were checked against the search API rather than inferred.
+
 **Search results** are re-rendered as a table with sortable columns: car, year,
-mileage, fuel, gearbox, price, location, seller and age. Three densities:
+mileage, fuel, gearbox, price, location, seller and date. Three densities:
 
 | Mode   | Row height | Cars visible on a 1440×900 laptop |
 |--------|-----------:|----------------------------------:|
@@ -43,9 +69,15 @@ opens them in tabs side by side.
 **Saved searches** — "☆ Spara sökning" stores the current URL with a label you
 choose. They're listed in the extension popup.
 
-**Ad pages** get a spec strip (year, mileage, fuel, gearbox, power, drivetrain,
-body, colour, owners, next inspection) inserted directly under the title, so the
-facts are visible without scrolling past a half-screen hero image.
+**Dates** read the way the list used to: `Idag 14:32`, `Igår 23:48`, then
+`12 jun 09:15` — a wall-clock time you can compare against the ad above it
+instead of a `3 tim` that has to be decoded. The exact timestamp is on hover,
+and the column still sorts on the underlying value.
+
+**Ad pages** get a spec strip inserted under the price, so the facts are visible
+without scrolling past a half-screen hero image. The gallery is capped, and
+whichever facts Blocket already prints between the title and the price are left
+out of the strip rather than repeated a few centimetres lower.
 
 ## Where the data comes from
 
@@ -70,7 +102,7 @@ manifest.json      MV3 manifest; two content scripts, MAIN and ISOLATED worlds
 src/hook.js        page world — observes the data Blocket loads, posts it across
 src/store.js       chrome.storage wrapper: seen, hidden, compare, saved searches
 src/format.js      Swedish number/date formatting, doc → row mapping
-src/content.js     builds the table, the pager, the compare tray, the spec strip
+src/content.js     builds the filter row, table, pager, compare tray, spec strip
 src/classic.css    the whole visual design
 src/popup.html/js  saved searches and the reset buttons
 ```
@@ -78,15 +110,18 @@ src/popup.html/js  saved searches and the reset buttons
 ## Known limits
 
 - **Column sorting is page-local.** It reorders the 49 loaded rows, not all
-  143 000 cars. Sorting the full result set means changing Blocket's own sort
-  control, which triggers their fetch. Wiring our headers to that is the obvious
-  next step.
-- **Filters are still Blocket's**, restyled tighter rather than rebuilt. They
-  work; they're just not ours yet.
-- **Tailwind class names will drift.** The layout-widening rules key off
-  `.grid-cols-3` and `.col-span-2`, which are generated classes. The data hooks
-  (`.sf-result-list`, `sf-search-ad`, the API path) look stable — they're
-  semantic — but the layout overrides are the fragile part and will need a touch
-  after a Blocket redesign.
+  143 000 cars. Blocket supports ten server-side sorts and ships the list of them
+  in the payload, so wiring the column headers to those — the way the filter
+  chips are already wired to the URL — is the obvious next step.
+- **Tailwind class names will drift.** The layout rules key off `.grid-cols-3`
+  and `.col-span-2`, which are generated classes, and the sidebar reveal depends
+  on the first grid child being the filter column. The data hooks
+  (`.sf-result-list`, the API path, the payload's own field names) look stable —
+  they're semantic — but the layout overrides are the fragile part and will need
+  a touch after a Blocket redesign.
+- **Two mount points are found by text**, not by class: the sort/map toolbar via
+  a "Visa på kartan" button, and Blocket's own active-filter row via its "Rensa
+  alla filter" button. Deliberate — the surrounding classes are generated and
+  worse — but it means a copy change moves them.
 - Firefox port is not done yet: `world: "MAIN"` content scripts need a different
   arrangement there.

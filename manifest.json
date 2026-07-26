@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Blocket Bilar – Klassisk vy",
-  "version": "0.1.0",
-  "description": "Ger tillbaka den täta, skannbara listvyn för bilar på Blocket. Sorterbara kolumner, sparade sökningar, jämförelse och lästmarkering.",
+  "version": "0.2.0",
+  "description": "Ger tillbaka den täta, skannbara listvyn för bilar på Blocket. Filterrad, sorterbara kolumner, sparade sökningar, jämförelse och lästmarkering.",
 
   "icons": {
     "16": "icons/icon16.png",

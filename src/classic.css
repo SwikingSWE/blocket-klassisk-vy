@@ -151,8 +151,11 @@ html.bc-on [class*="sf-search-ad"][class*="pole"] { display: none !important; }
   display: flex; justify-content: space-between; gap: 8px;
   padding: 8px; border-top: 1px solid var(--bc-line);
 }
-.bc-btn-primary { background: var(--bc-link); border-color: var(--bc-link); color: #fff; font-weight: 600; }
-.bc-btn-primary:hover { filter: brightness(1.08); background: var(--bc-link); }
+/* Both classes, deliberately: plain `.bc-btn` is defined further down the file
+   and would otherwise win the background at equal specificity, leaving white
+   text on a white button. */
+.bc-btn.bc-btn-primary { background: var(--bc-link); border-color: var(--bc-link); color: #fff; font-weight: 600; }
+.bc-btn.bc-btn-primary:hover { filter: brightness(1.08); background: var(--bc-link); }
 
 .bc-activerow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
 .bc-activechip {
@@ -176,8 +179,11 @@ html.bc-on [class*="sf-search-ad"][class*="pole"] { display: none !important; }
   flex-wrap: wrap;
 }
 
-.bc-count { font-size: 13px; }
-.bc-count strong { font-size: 15px; }
+/* "Bilar, 143 589 träffar" — category and count on one line. */
+.bc-count { font-size: 13px; display: flex; align-items: baseline; gap: 2px; flex-wrap: wrap; }
+.bc-h2 { font-size: 17px; font-weight: 700; }
+.bc-hits { color: var(--bc-fg-soft); }
+.bc-numhits { color: var(--bc-fg); font-size: 14px; font-variant-numeric: tabular-nums; }
 .bc-muted { color: var(--bc-fg-soft); }
 
 .bc-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -398,3 +404,22 @@ html[data-bc-theme="dark"] .bc-btn,
 html[data-bc-theme="dark"] .bc-page { background: #1a1d22; color: var(--bc-fg); }
 html[data-bc-theme="dark"] .bc-seg-on { background: #e8eaee; color: #14161a; }
 html[data-bc-theme="dark"] .bc-specitem { background: #14161a; }
+
+/* The chip row sets a few colours literally rather than through the tokens —
+   a white pill and a pale blue active chip — which stay light when the rest of
+   the page goes dark. Restate those, and deepen the panel shadow, which is
+   invisible against a dark surface at .18 alpha. */
+html[data-bc-theme="dark"] .bc-fchip,
+html[data-bc-theme="dark"] .bc-qinput,
+html[data-bc-theme="dark"] .bc-range { background: #1a1d22; color: var(--bc-fg); }
+html[data-bc-theme="dark"] .bc-fchip-active { background: var(--bc-fg); color: #14161a; }
+html[data-bc-theme="dark"] .bc-chip-panel {
+  background: #1a1d22;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .55);
+}
+html[data-bc-theme="dark"] .bc-activechip { background: #1e2630; }
+/* Out-specifies the dark `.bc-btn` rule above, which would otherwise flatten
+   the primary button back to the same grey as the rest. Dark text, not white:
+   --bc-link is a pale blue in this theme, meant for link text on a dark
+   surface, and white on it comes out around 1.9:1. */
+html[data-bc-theme="dark"] .bc-btn.bc-btn-primary { background: var(--bc-link); color: #14161a; }

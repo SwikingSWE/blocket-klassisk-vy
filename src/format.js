@@ -32,6 +32,28 @@
     return Math.round(d / (365 * 86400000)) + ' år';
   };
 
+  /* The list date the old page printed: "Idag 14:32", "Igår 23:48", then
+     "12 jun 09:15". A wall-clock time you can compare against the ad above it,
+     rather than a "3 tim" that has to be decoded. `age` is still what the
+     column sorts on and what the tooltip spells out. */
+  const MONTHS = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+
+  const listDate = (ts) => {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const now = new Date();
+    const hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    const sameDay = (a, b) =>
+      a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    if (sameDay(d, now)) return 'Idag ' + hm;
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    if (sameDay(d, yesterday)) return 'Igår ' + hm;
+    const day = d.getDate() + ' ' + MONTHS[d.getMonth()];
+    /* older than this year: the year is more use than the time of day */
+    if (d.getFullYear() !== now.getFullYear()) return day + ' ' + d.getFullYear();
+    return day + ' ' + hm;
+  };
+
   /* Short gearbox / fuel labels — the full ones eat too much width. */
   const SHORT_TRANSMISSION = { Automatisk: 'Aut', Manuell: 'Man' };
   const SHORT_FUEL = {
@@ -89,5 +111,5 @@
     };
   };
 
-  window.BCFormat = { num, price, mil, age, toRow };
+  window.BCFormat = { num, price, mil, age, listDate, toRow };
 })();
