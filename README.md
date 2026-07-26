@@ -105,6 +105,13 @@ src/format.js      Swedish number/date formatting, doc → row mapping
 src/content.js     builds the filter row, table, pager, compare tray, spec strip
 src/classic.css    the whole visual design
 src/popup.html/js  saved searches and the reset buttons
+test/store.test.js storage-layer regression tests
+```
+
+Run the tests with plain node, no dependencies and no build step:
+
+```bash
+node test/store.test.js
 ```
 
 ## Known limits
