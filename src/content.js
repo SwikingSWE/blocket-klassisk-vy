@@ -122,12 +122,35 @@
     { key: 'age', label: 'Inlagd', cls: 'bc-c-num bc-c-age', sort: (r) => -(r.timestamp || 0) },
   ];
 
-  /* Server-side sorts Blocket itself supports, mapped to our column keys. */
+  /* Blocket's own sorts, mapped to our column keys as [ascending, descending].
+   *
+   * Where a column has one, clicking its header hands the sort to the server
+   * via ?sort= and it applies to the whole result set. Columns with no server
+   * equivalent — drivmedel, låda, ort, säljare, mil/år — still sort locally,
+   * which only reorders the fifty rows on this page.
+   *
+   * Values come from the payload's `sort` scope; `null` means Blocket offers no
+   * sort in that direction, so that click falls back to the local sort. */
   const SERVER_SORT = {
-    price: ['PRICE_ASC', 'PRICE_DESC'],
+    title: ['MODEL', null],
+    year: ['YEAR_ASC', 'YEAR_DESC'],
     mileage: ['MILEAGE_ASC', 'MILEAGE_DESC'],
-    year: ['YEAR_DESC', 'YEAR_ASC'],
-    age: ['PUBLISHED_DESC', null],
+    price: ['PRICE_ASC', 'PRICE_DESC'],
+    age: [null, 'PUBLISHED_DESC'],
+  };
+
+  /* Which column, if any, the server's current sort corresponds to — so the
+     arrow reflects what actually happened rather than what we last clicked. */
+  const serverSortState = () => {
+    const cur = new URL(location.href).searchParams.get('sort')
+      || (state.metadata && state.metadata.sort);
+    if (!cur) return null;
+    for (const key of Object.keys(SERVER_SORT)) {
+      const [asc, desc] = SERVER_SORT[key];
+      if (cur === asc) return { key, dir: 1 };
+      if (cur === desc) return { key, dir: -1 };
+    }
+    return null;
   };
 
   /* ------------------------------------------------------------------ *
@@ -487,7 +510,51 @@
     }
   };
 
+  /* Blocket's result count and sort dropdown sit outside the result list, so
+     hiding the list leaves both behind next to our own. The count is merely
+     duplicated; the sort actively conflicts, because theirs orders all 143 000
+     rows while our headers used to reorder only the fifty on the page, with
+     nothing to say which was in charge. Now that the headers drive ?sort=,
+     theirs is redundant and can go.
+
+     Both are found by content rather than class name — the classes around them
+     are generated. Each tags the narrowest element that holds it and nothing
+     else, so neighbours like "Visa på karta" survive. */
+  const hideNativeChrome = () => {
+    if (!document.querySelector('.bc-native-count')) {
+      /* "143 583 resultat" is a span wrapping another span plus a bare text
+         node, so it has element children — and there is a screen-reader copy
+         of the same string elsewhere. Match on collapsed text, take the
+         deepest hit, and require real width to skip the clipped sr-only one. */
+      const isCount = (e) =>
+        /^[\d\s]+resultat$/i.test((e.textContent || '').replace(/\s+/g, ' ').trim())
+        && e.getBoundingClientRect().width > 4;
+      const hits = [...document.querySelectorAll('span, p, div, h2')].filter(isCount);
+      const count = hits.find((e) => !hits.some((o) => o !== e && e.contains(o)));
+      if (count) count.classList.add('bc-native-count');
+    }
+
+    if (!document.querySelector('.bc-native-sort')) {
+      const sel = document.querySelector('select');
+      if (sel) {
+        /* Climb only while the wrapper still contains nothing but the select —
+           one step too far takes the map button with it. */
+        let box = sel;
+        while (box.parentElement
+               && box.parentElement.querySelectorAll('select').length === 1
+               && box.parentElement.querySelectorAll('a, button').length === 0) {
+          box = box.parentElement;
+        }
+        box.classList.add('bc-native-sort');
+      }
+      /* The "så här sorteras sökträffarna" explainer is not reachable from
+         here — it lives inside a podlet's shadow root. classic.css hides that
+         podlet by element name instead. */
+    }
+  };
+
   const hideNativeFilterChips = () => {
+    hideNativeChrome();
     if (document.querySelector('.bc-native-chips')) return;
     const clearAll = [...document.querySelectorAll('button')]
       .find((b) => /^Rensa alla filter$/i.test(b.textContent.trim()));
@@ -572,21 +639,40 @@
       cells.push(el('th', { class: 'bc-c-thumb' }, ''));
     }
 
+    const server = serverSortState();
+
     for (const col of COLUMNS) {
       if (col.key !== 'title' && prefs.columns[col.key] === false) continue;
-      const active = state.sortKey === col.key;
+
+      /* The server's sort wins the indicator when there is one: it describes
+         all 143 000 rows, not just the fifty in front of you. */
+      const active = server ? server.key === col.key : state.sortKey === col.key;
+      const dir = server && server.key === col.key ? server.dir : state.sortDir;
+      const wide = !!SERVER_SORT[col.key];
+
       cells.push(
         el('th', {
-          class: col.cls + ' bc-col-' + col.key + (active ? ' bc-sorted' : ''),
+          class: col.cls + ' bc-col-' + col.key + (active ? ' bc-sorted' : '')
+            + (wide ? ' bc-sortable-all' : ' bc-sortable-page'),
           scope: 'col',
+          title: wide
+            ? 'Sortera hela sökresultatet'
+            : 'Sorterar bara annonserna på den här sidan',
           onclick: () => {
-            if (state.sortKey === col.key) state.sortDir *= -1;
-            else { state.sortKey = col.key; state.sortDir = col.key === 'price' || col.key === 'mileage' ? 1 : -1; }
+            /* Next direction: flip if this column is already the active one,
+               otherwise start with the sensible end — cheapest, fewest mil,
+               newest — rather than always ascending. */
+            const nextDir = active ? -dir : (col.key === 'age' || col.key === 'year' ? -1 : 1);
+            const pair = SERVER_SORT[col.key];
+            const wanted = pair && (nextDir === 1 ? pair[0] : pair[1]);
+            if (wanted) { setUrlParam({ sort: wanted, page: null }); return; }
+            state.sortKey = col.key;
+            state.sortDir = nextDir;
             render();
           },
         }, [
           col.label,
-          el('span', { class: 'bc-arrow', text: active ? (state.sortDir === 1 ? '▲' : '▼') : '' }),
+          el('span', { class: 'bc-arrow', text: active ? (dir === 1 ? '▲' : '▼') : '' }),
         ])
       );
     }

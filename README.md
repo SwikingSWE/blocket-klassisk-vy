@@ -116,19 +116,22 @@ node test/store.test.js
 
 ## Known limits
 
-- **Column sorting is page-local.** It reorders the 49 loaded rows, not all
-  143 000 cars. Blocket supports ten server-side sorts and ships the list of them
-  in the payload, so wiring the column headers to those — the way the filter
-  chips are already wired to the URL — is the obvious next step.
+- **Five columns sort the whole result, four sort only this page.** Bil, År,
+  Mil, Pris and Inlagd hand the sort to Blocket via `?sort=`, so they reorder
+  all 143 000 cars. Drivmedel, Låda, Ort and Säljare have no server equivalent
+  and still reorder just the fifty rows in front of you; those headers carry a
+  dotted underline to say so, and a tooltip that spells it out.
 - **Tailwind class names will drift.** The layout rules key off `.grid-cols-3`
   and `.col-span-2`, which are generated classes, and the sidebar reveal depends
   on the first grid child being the filter column. The data hooks
   (`.sf-result-list`, the API path, the payload's own field names) look stable —
   they're semantic — but the layout overrides are the fragile part and will need
   a touch after a Blocket redesign.
-- **Two mount points are found by text**, not by class: the sort/map toolbar via
-  a "Visa på kartan" button, and Blocket's own active-filter row via its "Rensa
-  alla filter" button. Deliberate — the surrounding classes are generated and
-  worse — but it means a copy change moves them.
+- **Several hooks are found by text**, not by class: the sort/map toolbar via a
+  "Visa på kartan" button, Blocket's active-filter row via "Rensa alla filter",
+  and their result count by matching "N resultat". Deliberate — the surrounding
+  classes are generated and worse — but it means a copy change moves them.
+  Where a semantic element name exists it is preferred instead, as with
+  `w-pagination` and `search-sorting-info-podlet-isolated`.
 - Firefox port is not done yet: `world: "MAIN"` content scripts need a different
   arrangement there.

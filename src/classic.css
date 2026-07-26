@@ -59,6 +59,25 @@ html.bc-on .sf-result-list { display: none !important; }
 /* their active-filter chips — we draw the old "Rensa (n)" row instead */
 html.bc-on .bc-native-chips { display: none !important; }
 
+/* Their pagination is a web component sitting beside the result list rather
+   than inside it, so hiding the list leaves it behind and you get two pagers,
+   both driving ?page=. Ours replaces it. */
+html.bc-on w-pagination { display: none !important; }
+
+/* Their result count, directly above our own "Bilar, N träffar". */
+html.bc-on .bc-native-count { display: none !important; }
+
+/* Their sort dropdown. Only hidden once our column headers drive the real
+   server-side sort — until then it is the only way to sort the whole result
+   set and must stay. */
+html.bc-on .bc-native-sort { display: none !important; }
+
+/* "Så här sorteras sökträffarna" explains the dropdown above, and is orphaned
+   once that is gone. It lives in a shadow root, so script cannot reach the
+   link — but the podlet's own element name can be styled from here, and being
+   semantic it is a steadier hook than the generated classes around it. */
+html.bc-on search-sorting-info-podlet-isolated { display: none !important; }
+
 /* the "paid placement" strip and the map/grid switcher live above the list */
 html.bc-on [class*="sf-search-ad"][class*="pole"] { display: none !important; }
 
@@ -245,6 +264,9 @@ html.bc-on [class*="sf-search-ad"][class*="pole"] { display: none !important; }
 }
 .bc-table thead th:hover { background: #e7eaf0; }
 .bc-table thead th.bc-sorted { background: #dfe5ef; }
+/* A column that can only reorder this page is marked with a dotted underline,
+   so it is visibly a weaker promise than one that sorts the whole result. */
+.bc-table thead th.bc-sortable-page { text-decoration: underline dotted var(--bc-fg-soft); text-underline-offset: 3px; }
 .bc-arrow { margin-left: 4px; font-size: 9px; color: var(--bc-accent); }
 
 .bc-table td { padding: 4px 8px; border-bottom: 1px solid var(--bc-line); vertical-align: middle; }
