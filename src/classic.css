@@ -78,7 +78,9 @@ html.bc-on .bc-native-sort { display: none !important; }
    semantic it is a steadier hook than the generated classes around it. */
 html.bc-on search-sorting-info-podlet-isolated { display: none !important; }
 
-/* the "paid placement" strip and the map/grid switcher live above the list */
+/* Blocket's own rendering of the paid placements, above their list. We draw
+   them ourselves at the top of the table instead — see .bc-adrow — so this
+   hides the duplicate, not the ads. */
 html.bc-on [class*="sf-search-ad"][class*="pole"] { display: none !important; }
 
 /* ---- shell --------------------------------------------------------- */
@@ -306,6 +308,36 @@ html.bc-on [class*="sf-search-ad"][class*="pole"] { display: none !important; }
 .bc-c-txt { white-space: nowrap; }
 .bc-c-price { font-weight: 700; font-size: 14px; }
 .bc-c-age { color: var(--bc-fg-soft); font-size: 12px; }
+
+/* ---- paid placements ------------------------------------------------ *
+ * Pinned above the organic rows and marked, so a sponsored listing cannot
+ * be mistaken for an ordinary one. Tinted rather than dimmed: hiding them
+ * in plain sight would be worse than not showing them at all.
+ */
+
+/* Marked with the existing accent rather than a tint: no new colour token,
+   and a red edge reads as "this one is different" at a glance. */
+.bc-adrow > td:first-child { box-shadow: inset 3px 0 0 var(--bc-accent); }
+/* a rule under the last sponsored row, separating them from the results */
+.bc-adrow + .bc-row:not(.bc-adrow) { border-top: 2px solid var(--bc-line-strong); }
+
+.bc-adtag {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 0 4px;
+  border: 1px solid var(--bc-line-strong);
+  border-radius: 2px;
+  background: var(--bc-bg);
+  color: var(--bc-fg-soft);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+/* in the tall densities the title sits on its own line, so the tag leads it */
+html[data-bc-density="normal"] .bc-adtag,
+html[data-bc-density="photos"] .bc-adtag { display: inline-block; margin-bottom: 2px; }
 
 .bc-dealer { color: var(--bc-fg-soft); }
 .bc-private { color: #1f7a3d; }

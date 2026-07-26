@@ -69,6 +69,15 @@ opens them in tabs side by side.
 **Saved searches** — "☆ Spara sökning" stores the current URL with a label you
 choose. They're listed in the extension popup.
 
+**Paid placements** ("Betald placering") are shown, pinned above the organic
+results and marked, with a switch in the toolbar for anyone who'd rather not see
+them. They're deliberately on by default: sponsored listings are how Blocket
+pays for the page, and silently dropping them is the thing that would turn a
+reading aid into something they'd have cause to object to. They never take part
+in sorting — a sponsored row that sorts like an ordinary one is a sponsored row
+in disguise — and they're excluded from the result count, which reports
+Blocket's own figure for the organic set.
+
 **Dates** read the way the list used to: `Idag 14:32`, `Igår 23:48`, then
 `12 jun 09:15` — a wall-clock time you can compare against the ad above it
 instead of a `3 tim` that has to be decoded. The exact timestamp is on hover,
@@ -86,14 +95,12 @@ page has already loaded, from two places:
 
 1. The server-rendered payload — Blocket ships a dehydrated TanStack Query cache
    as base64 inside a `<script type="application/json">` tag.
-2. The app's own `fetch`/`XHR` to `/mobility/search/api/search/…`, which
+2. The app's own `fetch`/`XHR` under `/mobility/search/api/…`, which
    `src/hook.js` tees by cloning the response. The page still receives an
-   untouched body; nothing is modified in flight.
-
-A side effect worth knowing: paid placements ("Betald placering") arrive from a
-separate `pole-position` endpoint and are merged in by Blocket's own renderer.
-Because this extension renders only the organic `docs` array, sponsored listings
-don't appear in the table.
+   untouched body; nothing is modified in flight. Both the organic
+   `search/<KEY>` endpoint and `pole-position/<KEY>` come through here; they're
+   told apart by the shape of the response (`docs` versus `results`) rather
+   than by path, so a rename doesn't break the tee.
 
 ## Files
 
@@ -133,5 +140,11 @@ node test/store.test.js
   classes are generated and worse — but it means a copy change moves them.
   Where a semantic element name exists it is preferred instead, as with
   `w-pagination` and `search-sorting-info-podlet-isolated`.
+- **Ad impressions aren't counted.** A pole-position result can carry
+  `viewUrls` for impression tracking, and firing those would mean the extension
+  making requests of its own — the one property that keeps it clearly a reading
+  aid rather than a client. So sponsored rows are displayed but not counted as
+  seen. `clickUrls` are honoured, since following one is the user's own
+  navigation. Both arrays have been empty in everything observed so far.
 - Firefox port is not done yet: `world: "MAIN"` content scripts need a different
   arrangement there.

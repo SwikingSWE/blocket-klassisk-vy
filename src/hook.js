@@ -15,19 +15,34 @@
 (() => {
   'use strict';
 
-  const SEARCH_API = '/mobility/search/api/search/';
+  /* Both endpoints we care about live under this prefix — search/<KEY> for the
+     organic results and pole-position/<KEY> for the paid placements — so match
+     the prefix and tell them apart by the shape of what comes back. A renamed
+     path still gets picked up that way; a changed response shape would not,
+     but the field names have been the stable part. */
+  const SEARCH_API = '/mobility/search/api/';
 
   /* postMessage rather than CustomEvent: it structured-clones cleanly across
      the page world / extension world boundary, with no shared object identity. */
-  const emit = (source, payload, url) => {
+  const post = (kind, source, payload, url) => {
     try {
       window.postMessage(
-        { __blocketClassic: true, kind: 'data', source, url: url || location.href, payload },
+        { __blocketClassic: true, kind, source, url: url || location.href, payload },
         location.origin
       );
     } catch (_) {
       /* a payload that cannot be structured-cloned is not worth crashing over */
     }
+  };
+
+  const emit = (source, payload, url) => post('data', source, payload, url);
+  const emitAds = (source, results, url) => post('ads', source, results, url);
+
+  /* `docs` is the organic result set, `results` the paid placements. */
+  const dispatchBody = (source, body, url) => {
+    if (!body) return;
+    if (Array.isArray(body.docs)) emit(source, body, url);
+    else if (Array.isArray(body.results)) emitAds(source, body.results, url);
   };
 
   /* ---------------------------------------------------------------- *
@@ -68,6 +83,11 @@
       if (!body) continue;
       if (scope === 'search' && Array.isArray(body.docs)) {
         emit('ssr', body);
+      } else if (scope === 'poleposition' && Array.isArray(body.results)) {
+        /* The paid placements ride along in the same dehydrated cache and were
+           previously dropped on the floor here, which is why sponsored rows
+           never reached the table. */
+        emitAds('ssr', body.results);
       }
     }
   };
@@ -113,7 +133,7 @@
         // clone() so the page still gets an unread body
         try {
           res.clone().json().then((body) => {
-            if (body && Array.isArray(body.docs)) emit('xhr', body, url);
+            dispatchBody('xhr', body, url);
           }).catch(() => {});
         } catch (_) {}
         return res;
@@ -134,7 +154,7 @@
         this.addEventListener('load', () => {
           try {
             const body = typeof this.response === 'string' ? JSON.parse(this.response) : this.response;
-            if (body && Array.isArray(body.docs)) emit('xhr', body, this.__bcUrl);
+            dispatchBody('xhr', body, this.__bcUrl);
           } catch (_) {}
         });
       }

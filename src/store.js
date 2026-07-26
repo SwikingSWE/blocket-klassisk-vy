@@ -16,6 +16,11 @@
       theme: 'light',      // 'light' | 'dark'
       dimSeen: true,
       hideHidden: true,
+      /* Paid placements are shown by default. They are how Blocket makes its
+         money on this page, and quietly dropping them is the thing that would
+         turn a reading aid into something they had cause to object to. The
+         switch is there for anyone who would rather not see them. */
+      showAds: true,
       columns: {
         year: true, mileage: true, milPerYear: false, fuel: true,
         transmission: true, price: true, location: true, seller: true, age: true,

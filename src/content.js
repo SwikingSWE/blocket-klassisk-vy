@@ -7,6 +7,7 @@
 
   const state = {
     docs: [],
+    ads: [],           // pole-position results, pinned above the organic rows
     filters: [],
     metadata: null,
     sortKey: null,
@@ -28,6 +29,9 @@
       state.filters = d.payload.filters || [];
       state.metadata = d.payload.metadata || null;
       state.sortKey = null; // a fresh server result wins over a local column sort
+      scheduleRender();
+    } else if (d.kind === 'ads' && Array.isArray(d.payload)) {
+      state.ads = d.payload;
       scheduleRender();
     } else if (d.kind === 'route') {
       scheduleRender();
@@ -66,21 +70,31 @@
 
   const harvestSsr = () => {
     if (state.docs.length) return true;
+    let got = false;
     for (const s of document.querySelectorAll('script[type="application/json"]')) {
       const data = decodeMaybeBase64(s.textContent);
       if (!data || !Array.isArray(data.queries)) continue;
       for (const q of data.queries) {
         const key = Array.isArray(q.queryKey) ? q.queryKey[0] : null;
+        const scope = key && key.scope;
         const body = q.state && q.state.data;
-        if (key && key.scope === 'search' && body && Array.isArray(body.docs) && body.docs.length) {
+        if (!body) continue;
+        if (scope === 'search' && Array.isArray(body.docs) && body.docs.length) {
           state.docs = body.docs;
           state.filters = body.filters || [];
           state.metadata = body.metadata || null;
-          return true;
+          got = true;
+        } else if (scope === 'poleposition' && Array.isArray(body.results)) {
+          /* Same cache, same pass — the paid placements sit right beside the
+             organic results and were being skipped over. */
+          state.ads = body.results;
         }
       }
+      /* Keep scanning the rest of this script's queries so the ads in it are
+         not missed, but stop once a script has yielded the organic set. */
+      if (got) return true;
     }
-    return false;
+    return got;
   };
 
   /* ------------------------------------------------------------------ *
@@ -159,6 +173,32 @@
 
   const isSearchPage = () => location.pathname.startsWith('/mobility/search');
   const isItemPage = () => location.pathname.startsWith('/mobility/item');
+
+  /* Paid placements as rows.
+   *
+   * A pole-position result wraps a `searchEntry` carrying every field an
+   * organic doc has, so toRow maps it unchanged. They stay pinned at the top
+   * and keep their "Betald placering" marker rather than being sorted in
+   * among the organic rows, because a sponsored listing that sorts like an
+   * ordinary one is a sponsored listing in disguise. */
+  const adRows = () => {
+    const prefs = S().state.prefs;
+    if (prefs.showAds === false) return [];
+    return state.ads.map((r) => {
+      const entry = r && r.searchEntry;
+      if (!entry) return null;
+      const row = F().toRow(entry);
+      row.isAd = true;
+      row.adLabel = (Array.isArray(entry.labels) && entry.labels.length && entry.labels[0].text)
+        || (Array.isArray(r.labels) && r.labels[0])
+        || 'Betald placering';
+      /* Follow their click-tracking URL when there is one, so the advertiser
+         still gets the click attributed. Navigating on a click the user made
+         is their request, not one of ours. */
+      if (Array.isArray(r.clickUrls) && r.clickUrls.length) row.url = r.clickUrls[0];
+      return row;
+    }).filter(Boolean);
+  };
 
   const rowsFromDocs = () => {
     const prefs = S().state.prefs;
@@ -605,6 +645,17 @@
           ' Tona sedda',
         ]),
 
+        /* Only worth a switch when there is something to switch off. */
+        state.ads.length
+          ? el('label', { class: 'bc-check', title: 'Betalda placeringar visas överst i listan' }, [
+              el('input', {
+                type: 'checkbox', ...(prefs.showAds !== false ? { checked: true } : {}),
+                onchange: (e) => { S().setPref('showAds', e.target.checked); render(); },
+              }),
+              ' Visa annonser',
+            ])
+          : null,
+
         el('button', {
           class: 'bc-btn bc-btn-quiet', type: 'button',
           title: 'Växla mellan ljust och mörkt',
@@ -705,6 +756,9 @@
     }
 
     const titleCell = el('td', { class: 'bc-c-title bc-col-title' }, [
+      /* The marker goes before the title and stays with it in every density,
+         so a sponsored row never reads as an ordinary one. */
+      r.isAd ? el('span', { class: 'bc-adtag', text: r.adLabel }) : null,
       el('a', { class: 'bc-title', href: r.url, text: r.title }),
       r.spec ? el('span', { class: 'bc-spec', text: r.spec }) : null,
     ]);
@@ -738,7 +792,8 @@
     );
 
     return el('tr', {
-      class: 'bc-row' + (seen && prefs.dimSeen ? ' bc-seen' : '') + (inCompare ? ' bc-picked' : ''),
+      class: 'bc-row' + (seen && prefs.dimSeen ? ' bc-seen' : '') + (inCompare ? ' bc-picked' : '')
+        + (r.isAd ? ' bc-adrow' : ''),
       dataset: { id: r.id },
       onclick: (e) => {
         if (e.target.closest('button, input, a')) return;
@@ -817,7 +872,9 @@
     root.appendChild(
       el('table', { class: 'bc-table' }, [
         buildHead(),
-        el('tbody', {}, rows.map(buildRow)),
+        /* Sponsored rows first and unsorted, the way Blocket places them. They
+           are excluded from `rows`, so column sorting never mixes them in. */
+        el('tbody', {}, adRows().concat(rows).map(buildRow)),
       ])
     );
     const pager = buildPager();
