@@ -1,9 +1,14 @@
 # Blocket Bilar – Klassisk vy
 
-Blocket's car search shows about two cars per screen. This puts back the dense,
-sortable list you could actually scan — around 30 in the same space.
+**The old Blocket car list, back.**
 
-A Chrome/Edge extension. No account, no server, no tracking.
+In November 2025 Blocket rebuilt its car search around cards. It shows about two
+cars per screen where the old list showed thirty, and the filters moved off to
+the side. If you've been scrolling ever since, this is for you.
+
+The extension puts the list back — dense, sortable, filters above the results —
+drawn from Blocket's own data. A Chrome/Edge extension: no account, no server,
+no tracking.
 
 ## Install
 
