@@ -770,7 +770,11 @@
     };
 
     push('year', 'bc-c-num', r.year != null ? String(r.year) : '—');
-    push('mileage', 'bc-c-num', r.mileage != null ? F().mil(r.mileage) : '—');
+    /* Mileage is the one number with no sane upper bound — sellers enter
+       genuine high figures and slipped decimals alike — so carry the full
+       value on hover in case the column still has to clip it. */
+    push('mileage', 'bc-c-num', r.mileage != null ? F().mil(r.mileage) : '—',
+      r.mileage != null ? F().mil(r.mileage) + ' mil' : null);
     push('milPerYear', 'bc-c-num', r.milPerYear != null ? F().num(r.milPerYear) : '—');
     push('fuel', 'bc-c-txt', r.fuelShort || '—', r.fuel);
     push('transmission', 'bc-c-txt', r.transmissionShort || '—', r.transmission);

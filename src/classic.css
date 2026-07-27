@@ -240,7 +240,10 @@ html.bc-on [class*="sf-search-ad"][class*="pole"] { display: none !important; }
 /* per-column widths, keyed by class rather than nth-child so that toggling
    a column or switching density cannot shift them out of alignment */
 .bc-col-year { width: 52px; }
-.bc-col-mileage { width: 66px; }
+/* 78px fits "1 234 567". 66px fitted "124 056" exactly, so any seven-digit
+   value clipped — and sellers do enter them, either as genuine high mileage or
+   as a slipped decimal. */
+.bc-col-mileage { width: 78px; }
 .bc-col-milPerYear { width: 62px; }
 .bc-col-fuel { width: 92px; }
 .bc-col-transmission { width: 52px; }
