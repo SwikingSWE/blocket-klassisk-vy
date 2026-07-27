@@ -89,8 +89,12 @@ Ladda upp en zip med bara det som körs — inte tester, dokumentation eller
 verktygskonfiguration. Extra filer gör paketet större och ger granskaren mer att
 fråga om:
 
+`icons/icon-source.png` är originalet som de tre storlekarna skalas ned från
+och ska inte med i paketet.
+
 ```bash
-rm -f dist.zip && zip -r dist.zip manifest.json icons src -x '*.DS_Store'
+rm -f dist.zip && zip -r dist.zip manifest.json icons src \
+  -x '*.DS_Store' 'icons/icon-source.png'
 ```
 
 ## Före inskickning
