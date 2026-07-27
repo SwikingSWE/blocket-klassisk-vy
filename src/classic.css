@@ -247,10 +247,18 @@ html.bc-on [class*="sf-search-ad"][class*="pole"] { display: none !important; }
 .bc-col-price { width: 106px; }
 .bc-col-location { width: 110px; }
 .bc-col-seller { width: 150px; }
-.bc-col-age { width: 58px; }
+/* 90px: the widest string listDate produces ("25 sep 12:23") measures 74px at
+   this font, plus 16px of cell padding. It was 58px, sized for the old "21 min"
+   format, so every dated row overflowed into the ✕ column and the two drew on
+   top of each other. */
+.bc-col-age { width: 90px; }
 .bc-col-title { width: auto; min-width: 0; }
 
 .bc-table td.bc-c-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Clip rather than overlap the neighbouring column if a value ever exceeds its
+   width again — a truncated date is recoverable, two columns drawn on top of
+   each other is not. */
+.bc-table td.bc-c-num { overflow: hidden; text-overflow: ellipsis; }
 
 .bc-table thead th {
   position: sticky; top: 0; z-index: 3;
