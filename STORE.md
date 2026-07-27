@@ -33,38 +33,42 @@ datum står i kolumner.
 
 FUNKTIONER
 
-• Tre tätheter: Tät, Normal och Bilder. Välj hur mycket du vill se på en gång.
-• Sorterbara kolumner. Bil, År, Mil, Pris och Inlagd sorterar hela sökresultatet
-  via Blockets egen sortering. Drivmedel, Låda, Ort och Säljare sorterar sidan du
-  har framför dig — de kolumnerna är markerade så att du vet skillnaden.
-• Filterrad ovanför listan istället för sidopanel, med antal träffar bredvid varje
-  val. Märke och modell fälls ut först när du valt ett märke.
-• Lästmarkering. Annonser du klickat på tonas ned nästa gång du kommer tillbaka.
-• Dölj annonser du inte vill se igen.
-• Jämför. Bocka för flera bilar och öppna dem sida vid sida.
-• Sparade sökningar, med ett klick tillbaka till exakt samma filter.
-• Mörkt läge, om du vill.
-
-INTEGRITET
-
-Tillägget gör inga egna nätverksanrop. Det läser informationen Blocket redan har
-skickat till din webbläsare och ritar om den. Ingen server, inget konto, ingen
-spårning, ingen analys. Allt du markerar och sparar ligger kvar i din egen
-webbläsare och skickas ingenstans.
-
-Behörigheterna är två: lagring på din egen dator, och åtkomst till blocket.se.
-Tillägget är inaktivt på alla andra webbplatser.
+• Tre tätheter: Tät (25 px per bil), Normal (79 px) och Bilder (127 px).
+• Bil, År, Mil, Pris och Inlagd sorterar hela sökresultatet via Blockets egen
+  sortering. Drivmedel, Låda, Ort och Säljare saknar motsvarighet hos Blocket
+  och sorterar bara den aktuella sidan; de kolumnrubrikerna är markerade.
+• Filterrad ovanför listan i stället för sidopanel. Varje alternativ visar
+  antal träffar. Modeller fälls ut när ett märke valts. "Visa alla filter"
+  öppnar Blockets egen panel för övriga filter.
+• Annonser du klickat på tonas ned vid återbesök. ✕ döljer en annons. Båda
+  nollställs från tilläggets meny.
+• Förkryssade annonser samlas längst ned och kan öppnas samtidigt.
+• Sparade sökningar behåller de valda filtren.
+• Datum visas som "Idag 14:32", "Igår 23:48" och "12 jun 09:15". Exakt
+  tidpunkt vid hovring.
+• Annonssidor får en faktarad under priset, och bildytan begränsas i höjd.
+• Mörkt läge.
 
 BETALDA PLACERINGAR
 
-Betalda placeringar visas, överst i listan och tydligt märkta. De är avstängbara
-med en kryssruta, men de visas som standard — annonserna är hur Blocket betalar
-för sidan, och tillägget är till för att göra listan läsbar, inte för att ta bort
-deras annonsplatser.
+Betalda placeringar visas överst i listan, märkta. De ingår inte i sorteringen
+och räknas inte in i antalet träffar. De kan stängas av med en kryssruta.
+
+INTEGRITET
+
+Tillägget gör inga egna nätverksanrop. Det läser den information Blocket redan
+har skickat till webbläsaren och ritar om den. Ingen server, inget konto, ingen
+spårning, ingen analys.
+
+Lästmarkeringar, dolda annonser, jämförelselistan och sparade sökningar lagras
+i chrome.storage.local på din egen dator.
+
+Behörigheter: lagring, samt åtkomst till blocket.se. Tillägget är inaktivt på
+alla andra webbplatser.
 
 INTE OFFICIELLT
 
-Det här är ett fristående tillägg utan koppling till Blocket eller Schibsted.
+Fristående tillägg utan koppling till Blocket eller Schibsted.
 ```
 
 ## Skärmbilder
