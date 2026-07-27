@@ -1,14 +1,9 @@
 # Blocket Bilar – Klassisk vy
 
-**The old Blocket car list, back.**
+Reverts the visual changes Blocket made in 2025 — but only for cars. The rest
+of the site is left alone.
 
-In November 2025 Blocket rebuilt its car search around cards. It shows about two
-cars per screen where the old list showed thirty, and the filters moved off to
-the side. If you've been scrolling ever since, this is for you.
-
-The extension puts the list back — dense, sortable, filters above the results —
-drawn from Blocket's own data. A Chrome/Edge extension: no account, no server,
-no tracking.
+A Chrome/Edge extension: no account, no server, no tracking.
 
 ## Install
 
@@ -27,45 +22,40 @@ step; what's in `src/` is what runs.
 ## What it does
 
 **A table instead of cards.** Ten columns — car, year, mileage, fuel, gearbox,
-price, location, seller, listed — with the numbers aligned so you can compare
-straight down. Three densities:
+price, location, seller, listed — in three densities:
 
-| Mode   | Height per car | vs. Blocket |
-|--------|---------------:|------------:|
-| Tät    | 25 px          | 8× more cars |
-| Normal | 79 px          | 2.5× |
-| Bilder | 127 px         | 1.6× |
+| Mode   | Height per car |
+|--------|---------------:|
+| Tät    | 25 px |
+| Normal | 79 px |
+| Bilder | 127 px |
 
-Blocket's own layout spends about 198 px of height per car.
+Blocket's card layout is about 198 px per car.
 
-**Sorting that means it.** Click *Bil*, *År*, *Mil*, *Pris* or *Inlagd* and the
-whole result set reorders — all 143 000 cars, through Blocket's own sort.
-*Drivmedel*, *Låda*, *Ort* and *Säljare* have no equivalent on their side, so
-those sort just the page in front of you; the headers say which is which.
+**Sorting.** *Bil*, *År*, *Mil*, *Pris* and *Inlagd* reorder the whole result
+set through Blocket's own sort. *Drivmedel*, *Låda*, *Ort* and *Säljare* have no
+equivalent on their side and sort only the current page; the headers mark which
+is which.
 
 **Filters above the list, not beside it.** A search box, then chips for brand,
-fuel, body, price, year, mileage, gearbox and seller, with the hit count next to
-every option — so you can see that there are 49 309 petrol cars before you pick
-one. Brand opens up into models once you've chosen a make. *Visa alla filter*
+fuel, body, price, year, mileage, gearbox and seller, each option showing its
+hit count. Brand expands into models once a make is picked. *Visa alla filter*
 reveals Blocket's own panel for the fourteen filters the chips don't cover.
 
-**Marks what you've seen.** Ads you click through to are dimmed when you come
-back. `✕` hides one for good. Both reset from the toolbar popup.
+**Seen and hidden.** Ads clicked through to are dimmed on return. `✕` hides one
+for good. Both reset from the toolbar popup.
 
-**Compare.** Tick rows and they collect in a tray; *Öppna alla* opens them side
-by side.
+**Compare.** Ticked rows collect in a tray; *Öppna alla* opens them side by side.
 
 **Saved searches.** *☆ Spara sökning* keeps the current filters under a name.
 
-**Readable dates.** `Idag 14:32`, `Igår 23:48`, then `12 jun 09:15` — a
-wall-clock time you can compare against the row above, instead of a `3 tim` you
-have to decode. Exact timestamp on hover.
+**Dates** as `Idag 14:32`, `Igår 23:48`, then `12 jun 09:15`. Exact timestamp on
+hover; the column sorts on the underlying value.
 
-**Ad pages** get the facts in a strip under the price, so you aren't scrolling
-past a half-screen photo to find the mileage.
+**Ad pages** get a spec strip under the price, and the gallery is capped.
 
 **Sponsored listings are shown**, pinned at the top and labelled, with a switch
-if you'd rather not see them. On by default on purpose — see below.
+to hide them. On by default — see below.
 
 ## Privacy
 
@@ -79,11 +69,9 @@ you mark as seen or hidden, your compare list and your saved searches stay in
 It asks for two permissions: `storage`, and access to `blocket.se`. It does
 nothing on any other site. Full text in [PRIVACY.md](PRIVACY.md).
 
-**On sponsored listings.** They're displayed by default and can be switched off.
-Paid placements are how Blocket pays for the page. Quietly dropping them would
-turn a reading aid into something they'd have fair cause to object to, so the
-default shows them — clearly marked, never mixed into the sort, and never
-counted in the result total.
+**On sponsored listings.** Shown by default, and switchable off. Paid placements
+are how Blocket pays for the page, so the default leaves them in — marked, never
+mixed into the sort, never counted in the result total.
 
 ## How it works
 

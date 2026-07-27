@@ -24,16 +24,12 @@ Ger tillbaka den täta, skannbara listvyn för bilar på Blocket. Filterrad, sor
 **Detaljerad beskrivning**
 
 ```
-Gamla Blocket-listan, tillbaka.
+Tillägget återställer de visuella förändringar Blocket gjorde 2025 — men bara
+för bilar. Resten av sajten lämnas orörd.
 
-I november 2025 byggde Blocket om bilsökningen till kort. Där den gamla listan
-visade ett trettiotal bilar på skärmen visar korten ungefär två, och filtren
-flyttade ut i en sidopanel. Har du scrollat sedan dess är det här för dig.
-
-Tillägget ritar tillbaka listan: tät och sorterbar, med filtren ovanför
-träffarna där de brukade sitta. Årsmodell, miltal, drivmedel, växellåda, pris,
-ort, säljare och datum står uppradade i kolumner så att siffrorna går att
-jämföra rakt nedåt.
+Sökresultatet ritas om som en tät, sorterbar lista med filtren ovanför
+träffarna. Årsmodell, miltal, drivmedel, växellåda, pris, ort, säljare och
+datum står i kolumner.
 
 FUNKTIONER
 
