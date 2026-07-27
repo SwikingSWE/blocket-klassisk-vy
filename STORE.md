@@ -91,7 +91,7 @@ verktygskonfiguration. Extra filer gör paketet större och ger granskaren mer a
 fråga om:
 
 ```bash
-cd /Users/apaulander/Documents/dev/blocket-cars && rm -f dist.zip && zip -r dist.zip manifest.json icons src -x '*.DS_Store'
+rm -f dist.zip && zip -r dist.zip manifest.json icons src -x '*.DS_Store'
 ```
 
 ## Före inskickning
